@@ -65,11 +65,8 @@ const getdetailTask = async (req, res) => {
 
 
 /*
-
 updateTask Controller
-
 In req.body only those field will be given from "heading", "description" and "status" that is being Updated.
-
 req.body = {
     "task_id"    : task_id,
     "token"      : token,
@@ -77,17 +74,11 @@ req.body = {
     "description": ... ,
     "status"     : ...
 }
-
-
 1. Middleware isowner is Implemented in ../middleware/taskmiddleware.js (This will also handel if task with given _id doesnot exist).
 2. Return the detail of the task with given task_id after update.
-
 Response --> 
-
 1. Success
-
 200 Status code
-
 json = {
   status: 'success',
   data: {
@@ -98,62 +89,72 @@ json = {
     creator_id: 'kdjhgsdjgmsbmbs',
   }
 }
-
 2. Fail
-
 404 Status Code
 json = {
     "status": 'fail',
     "message": error message
 }
-
 */
 
 
 const updateTask = async (req, res) => {
     
-    const task_id = req.body.task_id;
-    //Write your code here.
+    try{
+        const {task_id, heading, description, status} = req.body;
+        //Write your code here.
+        const update = {};
+        if(heading) update.heading = heading;
+        if(description) update.description = description;
+        if(status) update.status = status;
+
+        const task = await Tasks.findOneAndUpdate({_id : task_id}, update, {new : true});
+
+        return res.status(200).json({status : "success", data : task});
+    }
+    catch(err){
+        return res.status(404).json({ message: err.message, status: 'fail' });
+    }
+        
 }
 
 
 /*
-
 deleteTask Controller
-
 req.body = {
     "task_id"    : task_id,
     "token"      : token,
 }
-
-
 1. Middleware isowner is Implemented in ../middleware/taskmiddleware.js (This will also handel if task with given _id doesnot exist and invalid token).
 2. delete the task with given task_id.
-
 Response --> 
-
 1. Success
-
 200 Status code
 json = {
   status: 'success',
   message: 'Task deleted successfully'
 }
-
 2. Fail
-
 404 Status Code
 json = {
     "status": 'fail',
     "message": error message
 }
-
 */
 
 const deleteTask = async (req, res) => {
 
-    const task_id = req.body.task_id;
-    //Write your code here.
+    try{
+        const task_id = req.body.task_id;
+        //Write your code here.
+        const task = await Tasks.findById(task_id);
+        const result = await Tasks.deleteOne(task);
+    
+        if(result) return res.status(200).json({ message: 'Task deleted successfully', status: 'success' });
+    }
+    catch(err){
+        return res.status(404).json({ message: err.message, status: 'fail' });
+    }
 
 }
 
